@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cobaq</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .category {
+        margin-bottom: 20px;
+      }
+      .category h2 {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>dari kategori</h1>
+    <div id="products"></div>
+
+    <script>
+      // mngelompokkan
+      function groupByCategory(products) {
+        const groupedProducts = {};
+
+        products.forEach((product) => {
+          if (!groupedProducts[product.category]) {
+            groupedProducts[product.category] = [];
+          }
+          groupedProducts[product.category].push(product);
+        });
+
+        return groupedProducts;
+      }
+
+      // View products
+      function displayGroupedProducts(groupedProducts, merchants) {
+        const container = document.getElementById("products");
+
+        for (const [category, products] of Object.entries(groupedProducts)) {
+          const categoryDiv = document.createElement("div");
+          categoryDiv.classList.add("category");
+
+          const categoryTitle = document.createElement("h2");
+          categoryTitle.textContent = category;
+          categoryDiv.appendChild(categoryTitle);
+
+          const productList = document.createElement("section");
+
+          products.forEach((product) => {
+            const productItem = document.createElement("p");
+            const merchant = merchants.find(
+              (m) => m.id === product.merchant_id
+            );
+            productItem.textContent = `${product.name} (Dibuat pada: ${product.created_at}, Warung: ${merchant.name})`;
+            productList.appendChild(productItem);
+          });
+
+          categoryDiv.appendChild(productList);
+          container.appendChild(categoryDiv);
+        }
+      }
+
+      // Get products
+      async function fetchData() {
+        try {
+          const response = await fetch("http://localhost:8000/data.php");
+          if (!response.ok) {
+            throw new Error("Jaringan lo gak stabil: " + response.statusText);
+          }
+          const data = await response.json();
+          const groupedProducts = groupByCategory(data.products);
+          displayGroupedProducts(groupedProducts, data.merchants);
+          console.log("intip: ", groupedProducts);
+        } catch (error) {
+          console.error("yahaha eror awokwokwok:", error);
+        }
+      }
+
+      // Panggil fungsi untuk mengambil data
+      fetchData();
+    </script>
+  </body>
+</html>
